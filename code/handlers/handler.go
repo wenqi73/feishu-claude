@@ -5,6 +5,7 @@ import (
 	"fmt"
 	larkcore "github.com/larksuite/oapi-sdk-go/v3/core"
 	"start-feishubot/logger"
+	"start-feishubot/services/bedrock"
 	"strings"
 
 	"start-feishubot/initialization"
@@ -29,6 +30,7 @@ type MessageHandler struct {
 	sessionCache services.SessionServiceCacheInterface
 	msgCache     services.MsgCacheInterface
 	gpt          *openai.ChatGPT
+	claude       *bedrock.Claude
 	config       initialization.Config
 }
 
@@ -91,22 +93,35 @@ func (m MessageHandler) msgReceivedHandler(ctx context.Context, event *larkim.P2
 		handler: &m,
 		info:    &msgInfo,
 	}
-	actions := []Action{
-		&ProcessedUniqueAction{}, //避免重复处理
-		&ProcessMentionAction{},  //判断机器人是否应该被调用
-		&AudioAction{},           //语音处理
-		&ClearAction{},           //清除消息处理
-		&VisionAction{},          //图片推理处理
-		&PicAction{},             //图片处理
-		&AIModeAction{},          //模式切换处理
-		&RoleListAction{},        //角色列表处理
-		&HelpAction{},            //帮助处理
-		&BalanceAction{},         //余额处理
-		&RolePlayAction{},        //角色扮演处理
-		&MessageAction{},         //消息处理
-		&EmptyAction{},           //空消息处理
-		&StreamMessageAction{},   //流式消息处理
+
+	var actions []Action
+
+	// ChatGPT 或 Claude 的消息处理
+	if initialization.IsBedrock() {
+		actions = []Action{
+			&ProcessedUniqueAction{},
+			&ProcessMentionAction{},
+			&ClaudeMessageAction{},
+		}
+	} else {
+		actions = []Action{
+			&ProcessedUniqueAction{}, //避免重复处理
+			&ProcessMentionAction{},  //判断机器人是否应该被调用
+			&AudioAction{},           //语音处理
+			&ClearAction{},           //清除消息处理
+			&VisionAction{},          //图片推理处理
+			&PicAction{},             //图片处理
+			&AIModeAction{},          //模式切换处理
+			&RoleListAction{},        //角色列表处理
+			&HelpAction{},            //帮助处理
+			&BalanceAction{},         //余额处理
+			&RolePlayAction{},        //角色扮演处理
+			&MessageAction{},         //gpt消息处理
+			&EmptyAction{},           //空消息处理
+			&StreamMessageAction{},   //流模式消息处理
+		}
 	}
+
 	chain(data, actions...)
 	return nil
 }
@@ -119,6 +134,16 @@ func NewMessageHandler(gpt *openai.ChatGPT,
 		sessionCache: services.GetSessionCache(),
 		msgCache:     services.GetMsgCache(),
 		gpt:          gpt,
+		config:       config,
+	}
+}
+
+func NewClaudeMessageHandler(claude *bedrock.Claude,
+	config initialization.Config) MessageHandlerInterface {
+	return &MessageHandler{
+		sessionCache: services.GetSessionCache(),
+		msgCache:     services.GetMsgCache(),
+		claude:       claude,
 		config:       config,
 	}
 }

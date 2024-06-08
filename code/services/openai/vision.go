@@ -3,6 +3,7 @@ package openai
 import (
 	"errors"
 	"start-feishubot/logger"
+	"start-feishubot/utils"
 )
 
 type ImageURL struct {
@@ -27,7 +28,7 @@ type VisionRequestBody struct {
 }
 
 func (gpt *ChatGPT) GetVisionInfo(msg []VisionMessages) (
-	resp Messages, err error) {
+	resp utils.Messages, err error) {
 	requestBody := VisionRequestBody{
 		Model:     "gpt-4-vision-preview",
 		Messages:  msg,
@@ -46,7 +47,7 @@ func (gpt *ChatGPT) GetVisionInfo(msg []VisionMessages) (
 		resp = gptResponseBody.Choices[0].Message
 	} else {
 		logger.Errorf("ERROR %v", err)
-		resp = Messages{}
+		resp = utils.Messages{}
 		err = errors.New("openai 请求失败")
 	}
 	return resp, err

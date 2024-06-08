@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"fmt"
-
 	"start-feishubot/initialization"
 	"start-feishubot/services/openai"
 	"start-feishubot/utils"
@@ -96,7 +95,7 @@ func (*RolePlayAction) Execute(a *ActionInfo) bool {
 	if system, foundSystem := utils.EitherCutPrefix(a.info.qParsed,
 		"/system ", "角色扮演 "); foundSystem {
 		a.handler.sessionCache.Clear(*a.info.sessionId)
-		systemMsg := append([]openai.Messages{}, openai.Messages{
+		systemMsg := append([]utils.Messages{}, utils.Messages{
 			Role: "system", Content: system,
 		})
 		a.handler.sessionCache.SetMsg(*a.info.sessionId, systemMsg)
@@ -143,7 +142,7 @@ func (*RoleListAction) Execute(a *ActionInfo) bool {
 	if _, foundSystem := utils.EitherTrimEqual(a.info.qParsed,
 		"/roles", "角色列表"); foundSystem {
 		//a.handler.sessionCache.Clear(*a.info.sessionId)
-		//systemMsg := append([]openai.Messages{}, openai.Messages{
+		//systemMsg := append([]services.Messages{}, services.Messages{
 		//	Role: "system", Content: system,
 		//})
 		//a.handler.sessionCache.SetMsg(*a.info.sessionId, systemMsg)

@@ -470,13 +470,6 @@ docker compose down
 更多介绍，参考[飞书上的小计算器: Go 机器人来啦](https://www.bilibili.com/video/BV12M41187rV/)
 
 
-## 一起交流
-
-遇到问题，可以加入飞书群沟通~
-
-<img src='https://github.com/ConnectAI-E/feishu-openai/assets/110169811/bc19db83-422e-4f2f-9465-77489817d482' alt='' width='300'/>
-
-
 ## 企联AI
 
 | <div style="width:200px">AI</div> |             <img width=120> SDK <img width=120>              |                         Application                          |

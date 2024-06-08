@@ -2,6 +2,7 @@ package services
 
 import (
 	"start-feishubot/services/openai"
+	"start-feishubot/utils"
 	"time"
 
 	"github.com/patrickmn/go-cache"
@@ -20,11 +21,11 @@ type Resolution string
 type PicStyle string
 
 type SessionMeta struct {
-	Mode         SessionMode       `json:"mode"`
-	Msg          []openai.Messages `json:"msg,omitempty"`
-	PicSetting   PicSetting        `json:"pic_setting,omitempty"`
-	AIMode       openai.AIMode     `json:"ai_mode,omitempty"`
-	VisionDetail VisionDetail      `json:"vision_detail,omitempty"`
+	Mode         SessionMode      `json:"mode"`
+	Msg          []utils.Messages `json:"msg,omitempty"`
+	PicSetting   PicSetting       `json:"pic_setting,omitempty"`
+	AIMode       openai.AIMode    `json:"ai_mode,omitempty"`
+	VisionDetail VisionDetail     `json:"vision_detail,omitempty"`
 }
 
 const (
@@ -52,8 +53,8 @@ const (
 type SessionServiceCacheInterface interface {
 	Get(sessionId string) *SessionMeta
 	Set(sessionId string, sessionMeta *SessionMeta)
-	GetMsg(sessionId string) []openai.Messages
-	SetMsg(sessionId string, msg []openai.Messages)
+	GetMsg(sessionId string) []utils.Messages
+	SetMsg(sessionId string, msg []utils.Messages)
 	SetMode(sessionId string, mode SessionMode)
 	GetMode(sessionId string) SessionMode
 	GetAIMode(sessionId string) openai.AIMode
@@ -131,7 +132,7 @@ func (s *SessionService) SetAIMode(sessionId string, aiMode openai.AIMode) {
 	s.cache.Set(sessionId, sessionMeta, maxCacheTime)
 }
 
-func (s *SessionService) GetMsg(sessionId string) (msg []openai.Messages) {
+func (s *SessionService) GetMsg(sessionId string) (msg []utils.Messages) {
 	sessionContext, ok := s.cache.Get(sessionId)
 	if !ok {
 		return nil
@@ -140,7 +141,7 @@ func (s *SessionService) GetMsg(sessionId string) (msg []openai.Messages) {
 	return sessionMeta.Msg
 }
 
-func (s *SessionService) SetMsg(sessionId string, msg []openai.Messages) {
+func (s *SessionService) SetMsg(sessionId string, msg []utils.Messages) {
 	maxLength := 4096
 	maxCacheTime := time.Hour * 12
 
@@ -257,7 +258,7 @@ func GetSessionCache() SessionServiceCacheInterface {
 	return sessionServices
 }
 
-func getStrPoolTotalLength(strPool []openai.Messages) int {
+func getStrPoolTotalLength(strPool []utils.Messages) int {
 	var total int
 	for _, v := range strPool {
 		total += v.CalculateTokenLength()

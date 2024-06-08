@@ -7,14 +7,14 @@ ENV GO111MODULE=on \
 WORKDIR /build
 ADD /code /build
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags '-w -s' -o feishu_chatgpt
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags '-w -s' -o feishu_claude
 
 FROM alpine:latest
 
 WORKDIR /app
 
 RUN apk add --no-cache bash
-COPY --from=golang /build/feishu_chatgpt /app
+COPY --from=golang /build/feishu_claude /app
 COPY --from=golang /build/role_list.yaml /app
 EXPOSE 9000
-ENTRYPOINT ["/app/feishu_chatgpt"]
+ENTRYPOINT ["/app/feishu_claude"]

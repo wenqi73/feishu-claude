@@ -5,6 +5,7 @@ import (
 	"start-feishubot/handlers"
 	"start-feishubot/initialization"
 	"start-feishubot/logger"
+	"start-feishubot/services/bedrock"
 
 	"github.com/gin-gonic/gin"
 	sdkginext "github.com/larksuite/oapi-sdk-gin"
@@ -20,8 +21,16 @@ func main() {
 	pflag.Parse()
 	config := initialization.GetConfig()
 	initialization.LoadLarkClient(*config)
-	gpt := openai.NewChatGPT(*config)
-	handlers.InitHandlers(gpt, *config)
+
+	if initialization.IsBedrock() {
+		print("I am bedrock")
+		claude := bedrock.NewClaude(*config)
+		handlers.InitClaudeHandlers(claude, *config)
+	} else {
+		print("I am gpt")
+		gpt := openai.NewChatGPT(*config)
+		handlers.InitHandlers(gpt, *config)
+	}
 
 	eventHandler := dispatcher.NewEventDispatcher(
 		config.FeishuAppVerificationToken, config.FeishuAppEncryptKey).

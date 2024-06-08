@@ -22,6 +22,10 @@ type Config struct {
 	FeishuAppVerificationToken string
 	FeishuBotName              string
 	OpenaiApiKeys              []string
+	AwsAccessKeyId             string
+	AwsSecretAccessKey         string
+	AwsRegion                  string
+	AwsBedrockModel            string
 	HttpPort                   int
 	HttpsPort                  int
 	UseHttps                   bool
@@ -76,6 +80,10 @@ func LoadConfig(cfg string) *Config {
 		OpenaiModel:                getViperStringValue("OPENAI_MODEL", "gpt-3.5-turbo"),
 		OpenAIHttpClientTimeOut:    getViperIntValue("OPENAI_HTTP_CLIENT_TIMEOUT", 550),
 		OpenaiMaxTokens:            getViperIntValue("OPENAI_MAX_TOKENS", 2000),
+		AwsAccessKeyId:             getViperStringValue("AWS_ACCESS_KEY_ID", ""),
+		AwsSecretAccessKey:         getViperStringValue("AWS_SECRET_ACCESS_KEY", ""),
+		AwsRegion:                  getViperStringValue("AWS_REGION", "us-west-2"),
+		AwsBedrockModel:            getViperStringValue("AWS_BEDROCK_MODEL", "anthropic.claude-3-opus-20240229-v1:0"),
 		HttpPort:                   getViperIntValue("HTTP_PORT", 9000),
 		HttpsPort:                  getViperIntValue("HTTPS_PORT", 9001),
 		UseHttps:                   getViperBoolValue("USE_HTTPS", false),
@@ -94,6 +102,10 @@ func LoadConfig(cfg string) *Config {
 	return config
 }
 
+func IsBedrock() bool {
+	return GetConfig().AwsAccessKeyId != ""
+}
+
 func getViperStringValue(key string, defaultValue string) string {
 	value := viper.GetString(key)
 	if value == "" {
@@ -102,8 +114,8 @@ func getViperStringValue(key string, defaultValue string) string {
 	return value
 }
 
-//OPENAI_KEY: sk-xxx,sk-xxx,sk-xxx
-//result:[sk-xxx sk-xxx sk-xxx]
+// OPENAI_KEY: sk-xxx,sk-xxx,sk-xxx
+// result:[sk-xxx sk-xxx sk-xxx]
 func getViperStringArray(key string, defaultValue []string) []string {
 	value := viper.GetString(key)
 	if value == "" {

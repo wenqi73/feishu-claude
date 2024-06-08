@@ -9,11 +9,10 @@ import (
 	"time"
 )
 
-func setDefaultPrompt(msg []utils.Messages) []utils.Messages {
+func setDefaultClaudePrompt(msg []utils.Messages) []utils.Messages {
 	if !hasSystemRole(msg) {
 		msg = append(msg, utils.Messages{
-			Role: "system", Content: "You are ChatGPT, " +
-				"a large language model trained by OpenAI. " +
+			Role: "system", Content: "You are Claude, " +
 				"Answer in user's language as concisely as" +
 				" possible. Knowledge cutoff: 20230601 " +
 				"Current date" + time.Now().Format("20060102"),
@@ -22,42 +21,22 @@ func setDefaultPrompt(msg []utils.Messages) []utils.Messages {
 	return msg
 }
 
-//func setDefaultVisionPrompt(msg []openai.VisionMessages) []openai.VisionMessages {
-//	if !hasSystemRole(msg) {
-//		msg = append(msg, openai.VisionMessages{
-//			Role: "system", Content: []openai.ContentType{
-//				{Type: "text", Text: "You are ChatGPT4V, " +
-//					"You are ChatGPT4V, " +
-//					"a large language and picture model trained by" +
-//					" OpenAI. " +
-//					"Answer in user's language as concisely as" +
-//					" possible. Knowledge cutoff: 20230601 " +
-//					"Current date" + time.Now().Format("20060102"),
-//				}},
-//		})
-//	}
-//	return msg
-//}
-
-type MessageAction struct { /*消息*/
+type ClaudeMessageAction struct { /*消息*/
 }
 
-func (*MessageAction) Execute(a *ActionInfo) bool {
+func (*ClaudeMessageAction) Execute(a *ActionInfo) bool {
 	if a.handler.config.StreamMode {
 		return true
 	}
 	msg := a.handler.sessionCache.GetMsg(*a.info.sessionId)
-	// 如果没有提示词，默认模拟ChatGPT
-	msg = setDefaultPrompt(msg)
+	msg = setDefaultClaudePrompt(msg)
 	msg = append(msg, utils.Messages{
 		Role: "user", Content: a.info.qParsed,
 	})
 
 	// get ai mode as temperature
-	aiMode := a.handler.sessionCache.GetAIMode(*a.info.sessionId)
 	fmt.Println("msg: ", msg)
-	fmt.Println("aiMode: ", aiMode)
-	completions, err := a.handler.gpt.Completions(msg, aiMode)
+	completions, err := a.handler.claude.Completions(msg)
 	if err != nil {
 		replyMsg(*a.ctx, fmt.Sprintf(
 			"🤖️：消息机器人摆烂了，请稍后再试～\n错误信息: %v", err), a.info.msgId)
@@ -86,26 +65,16 @@ func (*MessageAction) Execute(a *ActionInfo) bool {
 	return true
 }
 
-// 判断msg中的是否包含system role
-func hasSystemRole(msg []utils.Messages) bool {
-	for _, m := range msg {
-		if m.Role == "system" {
-			return true
-		}
-	}
-	return false
+type StreamClaudeMessageAction struct { /*消息*/
 }
 
-type StreamMessageAction struct { /*消息*/
-}
-
-func (m *StreamMessageAction) Execute(a *ActionInfo) bool {
+func (m *StreamClaudeMessageAction) Execute(a *ActionInfo) bool {
 	if !a.handler.config.StreamMode {
 		return true
 	}
 	msg := a.handler.sessionCache.GetMsg(*a.info.sessionId)
 	// 如果没有提示词，默认模拟ChatGPT
-	msg = setDefaultPrompt(msg)
+	msg = setDefaultClaudePrompt(msg)
 	msg = append(msg, utils.Messages{
 		Role: "user", Content: a.info.qParsed,
 	})
@@ -207,15 +176,4 @@ func (m *StreamMessageAction) Execute(a *ActionInfo) bool {
 			return false
 		}
 	}
-}
-
-func sendOnProcess(a *ActionInfo, ifNewTopic bool) (*string, error) {
-	// send 正在处理中
-	cardId, err := sendOnProcessCard(*a.ctx, a.info.sessionId,
-		a.info.msgId, ifNewTopic)
-	if err != nil {
-		return nil, err
-	}
-	return cardId, nil
-
 }

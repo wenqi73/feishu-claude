@@ -6,10 +6,11 @@ import (
 	"fmt"
 	go_openai "github.com/sashabaranov/go-openai"
 	"io"
+	"start-feishubot/utils"
 )
 
 func (c *ChatGPT) StreamChat(ctx context.Context,
-	msg []Messages, mode AIMode,
+	msg []utils.Messages, mode AIMode,
 	responseStream chan string) error {
 	//change msg type from Messages to openai.ChatCompletionMessage
 	chatMsgs := make([]go_openai.ChatCompletionMessage, len(msg))

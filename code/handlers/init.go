@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"start-feishubot/logger"
+	"start-feishubot/services/bedrock"
 
 	"start-feishubot/initialization"
 	"start-feishubot/services/openai"
@@ -28,6 +29,10 @@ var handlers MessageHandlerInterface
 
 func InitHandlers(gpt *openai.ChatGPT, config initialization.Config) {
 	handlers = NewMessageHandler(gpt, config)
+}
+
+func InitClaudeHandlers(claude *bedrock.Claude, config initialization.Config) {
+	handlers = NewClaudeMessageHandler(claude, config)
 }
 
 func Handler(ctx context.Context, event *larkim.P2MessageReceiveV1) error {

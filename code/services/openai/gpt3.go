@@ -3,9 +3,7 @@ package openai
 import (
 	"errors"
 	"start-feishubot/logger"
-	"strings"
-
-	"github.com/pandodao/tokenizer-go"
+	"start-feishubot/utils"
 )
 
 type AIMode float64
@@ -31,11 +29,6 @@ var AIModeStrs = []string{
 	"发散",
 }
 
-type Messages struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
 // ChatGPTResponseBody 请求体
 type ChatGPTResponseBody struct {
 	ID      string                 `json:"id"`
@@ -47,28 +40,23 @@ type ChatGPTResponseBody struct {
 }
 
 type ChatGPTChoiceItem struct {
-	Message      Messages `json:"message"`
-	Index        int      `json:"index"`
-	FinishReason string   `json:"finish_reason"`
+	Message      utils.Messages `json:"message"`
+	Index        int            `json:"index"`
+	FinishReason string         `json:"finish_reason"`
 }
 
 // ChatGPTRequestBody 响应体
 type ChatGPTRequestBody struct {
-	Model            string     `json:"model"`
-	Messages         []Messages `json:"messages"`
-	MaxTokens        int        `json:"max_tokens"`
-	Temperature      AIMode     `json:"temperature"`
-	TopP             int        `json:"top_p"`
-	FrequencyPenalty int        `json:"frequency_penalty"`
-	PresencePenalty  int        `json:"presence_penalty"`
+	Model            string           `json:"model"`
+	Messages         []utils.Messages `json:"messages"`
+	MaxTokens        int              `json:"max_tokens"`
+	Temperature      AIMode           `json:"temperature"`
+	TopP             int              `json:"top_p"`
+	FrequencyPenalty int              `json:"frequency_penalty"`
+	PresencePenalty  int              `json:"presence_penalty"`
 }
 
-func (msg *Messages) CalculateTokenLength() int {
-	text := strings.TrimSpace(msg.Content)
-	return tokenizer.MustCalToken(text)
-}
-
-func (gpt *ChatGPT) Completions(msg []Messages, aiMode AIMode) (resp Messages,
+func (gpt *ChatGPT) Completions(msg []utils.Messages, aiMode AIMode) (resp utils.Messages,
 	err error) {
 	requestBody := ChatGPTRequestBody{
 		Model:            gpt.Model,
@@ -92,7 +80,7 @@ func (gpt *ChatGPT) Completions(msg []Messages, aiMode AIMode) (resp Messages,
 		resp = gptResponseBody.Choices[0].Message
 	} else {
 		logger.Errorf("ERROR %v", err)
-		resp = Messages{}
+		resp = utils.Messages{}
 		err = errors.New("openai 请求失败")
 	}
 	return resp, err
